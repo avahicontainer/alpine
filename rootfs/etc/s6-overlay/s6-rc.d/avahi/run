@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+if [ -z "$SKIP_SETCAP" ]; then
+    # Allow avahi-daemon to bind to privileged ports
+    setcap 'cap_net_admin,cap_net_broadcast=+ep' $(readlink -f $(which avahi-daemon))
+
+    if ! avahi-daemon --version 1>/dev/null 2>/dev/null; then
+         >&2 echo "Couldn't start avahi-daemon with NET_ADMIN and NET_BROADCAST, please use --cap-add NET_ADMIN --cap-add NET_BROADCAST"
+        setcap 'cap_net_admin,cap_net_broadcast=-ep' $(readlink -f $(which avahi-daemon))
+    fi
+fi
+
+avahi-daemon --no-chroot --debug
